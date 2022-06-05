@@ -14,6 +14,7 @@ import os
 filename = os.path.join(os.path.dirname(__file__), "net.pkl")
 track = setupMonaco()
 generationSize = 50
+timestep_count = 5000
 
 cars = []
 
@@ -52,7 +53,7 @@ else:
 for gen in range(10):
 	print(f"Generation {gen}: ")
 	for car in tqdm(cars, desc=f"Gen {gen}"):
-		for timestep in range(2000):
+		for timestep in range(timestep_count):
 			if step(car) == False:
 				break 
 
