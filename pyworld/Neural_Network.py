@@ -1,9 +1,7 @@
-from random import weibullvariate
 from random import random, randint
-from sys import api_version
-from turtle import window_height
 from math import exp
 
+from copy import deepcopy
 
 
 def sigmoid(x):
@@ -16,27 +14,25 @@ def sigmoid(x):
 
 class Neural_Network:
     def __init__(self, inputsize):
-        print("createNeuralNetwork")
+        # print("createNeuralNetwork")
         self.inputsize = inputsize
         self.weights = []
         self.biases = []
         self.activations = []
         self.lastLayerSize = inputsize
         self.countLayers = 0
-    def mutate(self):
-        r = random()
-        # print(self.weights,self.biases)
-        if r > 0.5:          
-            idx0 = randint(0,len(self.weights)-1)
-            idx1 = randint(0,len(self.weights[idx0])-1)
-            idx2 = randint(0,len(self.weights[idx0][idx1])-1)
-            x = ((random() * 2)-1)*0.01
-            self.weights[idx0][idx1][idx2] += x
-        else:
-            idx0 = randint(0,len(self.biases)-1)
-            idx1 = randint(0,len(self.biases[idx0])-1)
-            x = ((random() * 2)-1)*0.01
-            self.biases[idx0][idx1] += x
+
+    def mutate(self, learning_rate: float = 0.2, mutation_chance: float = 0.5) -> None:
+        "Adjust the weights and biases randomly"
+        "Borrowed with permission from Rafael Urben"
+        for layerindex in range(len(self.weights)):
+            for neuronindex, _ in enumerate(self.biases[layerindex]):
+                if random() <= mutation_chance:
+                    self.biases[layerindex][neuronindex] += (learning_rate - (random() * 2 * learning_rate))
+            for neuronindex, _ in enumerate(self.weights[layerindex]):
+                for nextneuronindex, _ in enumerate(self.weights[layerindex][neuronindex]):
+                    if random() <= mutation_chance:
+                        self.weights[layerindex][neuronindex][nextneuronindex] += (learning_rate - (random() * 2 * learning_rate))
 
     def feedForward(self, inputs):
         for layer in range(self.countLayers):
@@ -72,10 +68,18 @@ class Neural_Network:
         self.countLayers += 1
         print("addLayer")
 
+    def clone(self):
+        nn = Neural_Network(self.inputsize)
+        nn.weights = deepcopy(self.weights)
+        nn.biases = deepcopy(self.biases)
+        nn.activations = deepcopy(self.activations)
+        nn.lastLayerSize = self.lastLayerSize
+        nn.countLayers = self.countLayers
+        return nn
 
-nn = Neural_Network(6)
-nn.addLayer(4)
-nn.addLayer(2)
-output = nn.feedForward([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
-print(nn.weights)
-print(output)
+# nn = Neural_Network(6)
+# nn.addLayer(4)
+# nn.addLayer(2)
+# output = nn.feedForward([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+# print(nn.weights)
+# print(output)

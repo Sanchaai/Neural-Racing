@@ -4,26 +4,18 @@ from CarAI import *
 from Monaco import setupMonaco
 from Traces import clearTraces, saveTraces
 from tqdm import tqdm
-from copy import deepcopy
 import random
 import pickle
 import os
+
 
 # Race between two random cars
 # Replace dummy network with your network later
 filename = os.path.join(os.path.dirname(__file__), "net.pkl")
 track = setupMonaco()
-generationSize = 125
+generationSize = 50
 
 cars = []
-for i in range(generationSize):
-	cars.append(CarAI(track))
-
-if os.path.isfile(filename):
-	with open(filename, 'rb') as f:
-		cars[0] = pickle.load(f)
-
-
 
 def step(car):
 	if car.gameOver:
@@ -36,30 +28,43 @@ def step(car):
 			car.gameOver = True
 			return False
 
-def newCars(oldCars):
-	bestCars = deepcopy(oldCars[:10])
-	for car in bestCars:
-		car.reset()
-	nCars = [deepcopy(bestCars[0])]
+def newCars(old_cars):
+	best_cars = old_cars[:5]
+	new_cars = [best_cars[0].clone()]
 	for _ in range(generationSize-1):
-		car = deepcopy(random.choice(bestCars))
+		car = random.choice(best_cars).clone()
 		car.nn.mutate()
-		nCars.append(car)
-	return nCars
+		new_cars.append(car)
+	return new_cars
 
 clearTraces()
 
-for gen in range(100):
+if os.path.isfile(filename):
+	with open(filename, 'rb') as f:
+		loadedcar = pickle.load(f)
+	loadedcar.reset()
+	cars.append(loadedcar)
+	cars = newCars(cars)
+else:
+	for i in range(generationSize):
+		cars.append(CarAI(track))
+
+for gen in range(10):
 	print(f"Generation {gen}: ")
-	for car in tqdm(cars):
-		for timesteps in range(2000):
-			if not step(car):
-				continue 
+	for car in tqdm(cars, desc=f"Gen {gen}"):
+		for timestep in range(2000):
+			if step(car) == False:
+				break 
+
 	cars.sort(key=lambda car:car.score, reverse=True)
-	with open(filename,'wb') as f:
-		pickle.dump(cars[0], f)
-	saveTraces(cars, generation=gen)
+	print([c.score for c in cars])
 	print(cars[0].score)
+
+	best_car = cars[0]
+	best_car.reset()
+	with open(filename,'wb') as f:
+		pickle.dump(best_car, f)
+	saveTraces(cars, generation=gen)
 
 	cars = newCars(cars)
 
