@@ -11,7 +11,7 @@ import os
 
 # Race between two random cars
 # Replace dummy network with your network later
-filename = "net.pkl"
+filename = os.path.join(os.path.dirname(__file__), "net.pkl")
 track = setupMonaco()
 generationSize = 125
 

@@ -1,7 +1,8 @@
 import os
+import os.path
 import json
 
-tracepath = "../data"
+tracepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "")
 
 def clearTraces():
 	
